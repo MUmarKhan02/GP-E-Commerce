@@ -1,0 +1,11 @@
+export { default as FAQ } from "./faq/faq";
+export { default as Shop } from "./shop/shop";
+export { default as Home } from "./home/home";
+export { default as Blogs } from "./blogs/blogs";
+export { default as Terms } from "./terms/terms";
+export { default as AboutUs } from "./about/about";
+export { default as Inquiry } from "./inquiry/inquiry";
+export { default as Support } from "./support/support";
+export { default as Privacy } from "./privacy/privacy";
+export { default as Contact } from "./contact/contact";
+export { default as Testimonials } from "./testimonials/testimonials";
