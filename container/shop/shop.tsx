@@ -1,13 +1,15 @@
 "use client";
 import { ArrowRight } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useCart } from "@/context/CartContext";
 
 interface Product {
 	id: string;
-	name: string;
-	cat: string;
+	title: string;
+	category: string;
+	description: string;
 	price: number;
-	img: string;
+	image: string;
 }
 
 const CATEGORIES = [
@@ -20,75 +22,41 @@ const CATEGORIES = [
 	{ label: "Perfumes & Colognes", value: "Perfumes" },
 ];
 
-const PRODUCTS: Product[] = [
-	{
-		id: "1",
-		name: "Refurbished iPhone 13 Pro",
-		cat: "Used Phones",
-		price: 90,
-		img: "https://images.unsplash.com/photo-1592286927505-1def25115558?auto=format&fit=crop&w=700&q=85",
-	},
-	{
-		id: "2",
-		name: "Galaxy S22 Ultra 256GB",
-		cat: "Used Phones",
-		price: 85,
-		img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=700&q=85",
-	},
-	{
-		id: "3",
-		name: "Cotton Basic T-Shirts Lot",
-		cat: "Regular Clothes",
-		price: 30,
-		img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=700&q=85",
-	},
-	{
-		id: "4",
-		name: "Classic Fit Denim Jeans",
-		cat: "Jeans",
-		price: 45,
-		img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=700&q=85",
-	},
-	{
-		id: "5",
-		name: "Smartwatch Pro Bulk Pack",
-		cat: "Electronics",
-		price: 60,
-		img: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=700&q=85",
-	},
-	{
-		id: "6",
-		name: "Organic Vitamin C Pills",
-		cat: "Vitamins",
-		price: 25,
-		img: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&w=700&q=85",
-	},
-	{
-		id: "7",
-		name: "Luxury Oud Intense Parfum",
-		cat: "Perfumes",
-		price: 75,
-		img: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=700&q=85",
-	},
-];
+
 
 export default function Shop() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("ALL");
 	const [maxPrice, setMaxPrice] = useState(200);
 
+	const [products, setProducts] = useState<Product[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+	const { addItem } = useCart();
+
+	useEffect(() => {
+		fetch("http://localhost:5000/api/products").then((res) => {
+			if(!res.ok) throw new Error("Failed to fetch products");
+			return res.json();
+		})
+		.then((data) => setProducts(data))
+		.catch((err) => setError(err.message))
+		.finally(() => setLoading(false));
+		
+	}, []);
+
 	const filteredProducts = useMemo(() => {
-		return PRODUCTS.filter((product) => {
+		return products.filter((product) => {
 			const matchesCategory =
-				selectedCategory === "ALL" || product.cat === selectedCategory;
-			const matchesSearch = product.name
+				selectedCategory === "ALL" || product.category === selectedCategory;
+			const matchesSearch = product.title
 				.toLowerCase()
 				.includes(searchTerm.toLowerCase());
 			const matchesPrice = product.price <= maxPrice;
 
 			return matchesCategory && matchesSearch && matchesPrice;
 		});
-	}, [searchTerm, selectedCategory, maxPrice]);
+	}, [products, searchTerm, selectedCategory, maxPrice]);
 
 	return (
 		<>
@@ -162,7 +130,11 @@ export default function Shop() {
 					</aside>
 
 					<div>
-						{filteredProducts.length === 0 ? (
+						{loading ? (
+							<div className="text-center py-12 text-slate-500">Loading products...</div>
+						) : error ? (
+						<div className="text-center py-12 text-red-500">{error}</div>
+						) : filteredProducts.length === 0 ? (
 							<div className="text-center py-12 text-slate-500">
 								No products found matching your filters.
 							</div>
@@ -175,26 +147,31 @@ export default function Shop() {
 										<div>
 											<img
 												className="w-full h-48 object-cover"
-												src={p.img}
-												alt={p.name}
+												src={p.image}
+												alt={p.title}
 											/>
 											<div className="p-4">
 												<span className="text-xs text-gold font-bold uppercase">
-													{p.cat}
+													{p.category}
 												</span>
 												<h3 className="font-bold text-base mt-1 text-ink">
-													{p.name}
+													{p.title}
 												</h3>
 											</div>
 										</div>
 										<div className="p-4 pt-0 flex items-center justify-between">
 											<b className="text-lg text-ink">${p.price}.00</b>
 											<a
-												href={`inquiry.html?product=${encodeURIComponent(p.name)}`}
+												href={`/inquiry?product=${encodeURIComponent(p.title)}`}
 												className="bg-gold text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-black transition-colors flex items-center gap-1">
 												Inquire <ArrowRight className="w-3 h-3" />
 											</a>
 										</div>
+										<button
+											onClick={() => addItem(p)}
+											className="w-full border border-gold text-gold text-xs font-bold px-3 py-2 rounded-lg hover:bg-gold hover:text-white transition-colors">
+											Add to Cart
+										</button>
 									</article>
 								))}
 							</div>

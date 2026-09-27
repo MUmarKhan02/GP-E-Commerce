@@ -1,3 +1,4 @@
+import { CartProvider } from "@/context/CartContext";
 import "@/styles/globals.css";
 import ReactLenis from "lenis/react";
 import { DM_Sans } from "next/font/google";
@@ -13,7 +14,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 			lang="en"
 			className={`${dM_Sans.className} antialiased`}>
 			<body>
-				<ReactLenis root>{children}</ReactLenis>
+				<ReactLenis root>
+					<CartProvider>
+						{children}
+					</CartProvider>
+				</ReactLenis>
 			</body>
 		</html>
 	);

@@ -9,3 +9,4 @@ export { default as Support } from "./support/support";
 export { default as Privacy } from "./privacy/privacy";
 export { default as Contact } from "./contact/contact";
 export { default as Testimonials } from "./testimonials/testimonials";
+export { default as Cart } from "./cart/cart";
